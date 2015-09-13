@@ -21,6 +21,13 @@ import android.widget.ShareActionProvider;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.JsonHttpResponseHandler;
+
+import org.json.JSONObject;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 
 public class MainActivity extends Activity
@@ -32,7 +39,7 @@ public class MainActivity extends Activity
     private EditText mainEditText;
 
     ListView mainListView;
-    ArrayAdapter mArrayAdapter;
+    JsonAdapter mJSONAdapter;
     ArrayList<String> mNameList = new ArrayList<>();
     ShareActionProvider mShareActionProvider;
 
@@ -40,6 +47,8 @@ public class MainActivity extends Activity
     private static final String PREFS = "prefs";
     private static final String PREF_NAME = "name";
     SharedPreferences mSharedPreferences;
+
+    private static final String QUERY_URL = "http://openlibrary.org/search.json?q=";
 
 
     @Override
@@ -49,8 +58,7 @@ public class MainActivity extends Activity
 
         // 1. Access the TextView defined in layout XML
         // and then set its text
-        mainTextView = (TextView) findViewById(R.id.main_textview);
-        mainTextView.setText("Set in Java!");
+        //mainTextView = (TextView) findViewById(R.id.main_textview);
 
         // 2. Access the Button defined in layout XML and listen for it here
         mainButton = (Button) findViewById(R.id.main_button);
@@ -62,14 +70,6 @@ public class MainActivity extends Activity
         // 4. Access the ListView
         mainListView = (ListView) findViewById(R.id.main_listview);
 
-        // Create an ArrayAdapter for the ListView
-        mArrayAdapter = new ArrayAdapter(this,
-                android.R.layout.simple_list_item_1,
-                mNameList);
-
-        // Set the ListView to use the ArrayAdapter
-        mainListView.setAdapter(mArrayAdapter);
-
         // 5. Set this activity to react to list items being pressed
         mainListView.setOnItemClickListener(this);
 
@@ -78,6 +78,12 @@ public class MainActivity extends Activity
 
         // 7. Greet the user, or ask for their name if new
         displayWelcome();
+
+        // 10. Create a JSONAdapter for the ListView
+        mJSONAdapter = new JsonAdapter(this, getLayoutInflater());
+
+        // Set the ListView to use the ArrayAdapter
+        mainListView.setAdapter(mJSONAdapter);
 
     }
 
@@ -141,6 +147,11 @@ public class MainActivity extends Activity
     public void onClick(View v) {
 
         numClicks++;
+
+        // 9. Take what was typed into the EditText and use in search
+        queryBooks(mainEditText.getText().toString());
+
+        /*
         // change the text when the button is clicked.
         mainTextView.setText("Button pressed " + numClicks + " times.");
 
@@ -151,6 +162,7 @@ public class MainActivity extends Activity
         // Also add that value to the list shown in the ListView
         mNameList.add(mainEditText.getText().toString());
         mArrayAdapter.notifyDataSetChanged();  // refresh the list with the new name
+        */
 
         // this hides the kbd after typing.
         Context context = getApplicationContext();
@@ -162,11 +174,7 @@ public class MainActivity extends Activity
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        // Log the item's position and contents
-        // to the console in Debug
-        Log.d("omg android", position + ": " + mNameList.get(position));
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -205,5 +213,48 @@ public class MainActivity extends Activity
             // it should work with that Intent
             mShareActionProvider.setShareIntent(shareIntent);
         }
+    }
+
+    /** access the REST API to get books based on query */
+    private void queryBooks(String searchString) {
+
+        // Prepare your search string to be put in a URL
+        // It might have reserved characters or something
+        String urlString = "";
+        try {
+            urlString = URLEncoder.encode(searchString, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+
+            // if this fails for some reason, let the user know why
+            e.printStackTrace();
+            Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+
+        // Create a client to perform networking
+        AsyncHttpClient client = new AsyncHttpClient();
+
+        // Have the client get a JSONArray of data and define how to respond
+        client.get(QUERY_URL + urlString,
+            new JsonHttpResponseHandler() {
+
+                @Override
+                public void onSuccess(JSONObject jsonObject) {
+                    // Display a "Toast" message
+                    // to announce your success
+                    Toast.makeText(getApplicationContext(), "Success!", Toast.LENGTH_LONG).show();
+
+                    // update the data in your custom method.
+                    mJSONAdapter.updateData(jsonObject.optJSONArray("docs"));
+                }
+
+                @Override
+                /** Display a "Toast" message to announce the failure */
+                public void onFailure(int statusCode, Throwable throwable, JSONObject error) {
+                    Toast.makeText(getApplicationContext(), "Error: " + statusCode + " " + throwable.getMessage(), Toast.LENGTH_LONG).show();
+
+                    // Log error message to help solve any problems
+                    Log.e("omg android", statusCode + " " + throwable.getMessage());
+                }
+            });
     }
 }

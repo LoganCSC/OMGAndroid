@@ -1,8 +1,7 @@
 <resources>
-    <string name="app_name">OMG Android</string>
-
-    <string name="textviewLabel">Hello Shanna!</string>
-    <string name="buttonLabel">Click me</string>
+    <string name="app_name">Bookmaster General</string>
+    <string name="textviewLabel">Search For Books!</string>
+    <string name="buttonLabel">Search</string>
+    <string name="hintLabel">Title and/or Author</string>
     <string name="action_settings">Settings</string>
-    <string name="hintLabel">Type your name</string>
 </resources>

@@ -2,22 +2,23 @@ package com.barrybecker4.omgandroid;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.v4.view.MenuItemCompat;
+import android.support.v7.widget.ShareActionProvider;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.ShareActionProvider;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -49,6 +50,7 @@ public class MainActivity extends Activity
     SharedPreferences mSharedPreferences;
 
     private static final String QUERY_URL = "http://openlibrary.org/search.json?q=";
+    ProgressDialog progressDialog;
 
 
     @Override
@@ -85,6 +87,9 @@ public class MainActivity extends Activity
         // Set the ListView to use the ArrayAdapter
         mainListView.setAdapter(mJSONAdapter);
 
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("Searching for Book");
+        progressDialog.setCancelable(false);
     }
 
     public void displayWelcome() {
@@ -174,6 +179,19 @@ public class MainActivity extends Activity
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        // 12. Now that the user's chosen a book, grab the cover data
+        JSONObject jsonObject = (JSONObject) mJSONAdapter.getItem(position);
+        String coverID = jsonObject.optString("cover_i", "");
+
+        // create an Intent to take you over to a new DetailActivity
+        Intent detailIntent = new Intent(this, DetailActivity.class);
+
+        // pack away the data about the cover into your Intent before you head out
+        detailIntent.putExtra("coverID", coverID);
+        // TODO: add any other data you'd like as Extras
+
+        // start the next Activity using your prepared Intent
+        startActivity(detailIntent);
     }
 
     @Override
@@ -184,14 +202,14 @@ public class MainActivity extends Activity
         getMenuInflater().inflate(R.menu.menu_main, menu);
 
         // Access the Share Item defined in menu XML
-        //MenuItem shareItem = menu.findItem(R.id.menu_item_share);
+        MenuItem shareItem = menu.findItem(R.id.menu_item_share);
 
         // Access the object responsible for
         // putting together the sharing submenu
-        //if (shareItem != null) {
-            //mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(shareItem);
-            //mShareActionProvider = (ShareActionProvider) menuItem.getActionProvider();
-        //}
+        if (shareItem != null) {
+            mShareActionProvider =
+                    (ShareActionProvider) MenuItemCompat.getActionProvider(shareItem);
+        }
 
         // Create an Intent to share your content
         setShareIntent();
@@ -232,6 +250,8 @@ public class MainActivity extends Activity
 
         // Create a client to perform networking
         AsyncHttpClient client = new AsyncHttpClient();
+        // Show ProgressDialog to inform user that a task in the background is occurring
+        progressDialog.show();
 
         // Have the client get a JSONArray of data and define how to respond
         client.get(QUERY_URL + urlString,
@@ -239,6 +259,7 @@ public class MainActivity extends Activity
 
                 @Override
                 public void onSuccess(JSONObject jsonObject) {
+                    progressDialog.dismiss();
                     // Display a "Toast" message
                     // to announce your success
                     Toast.makeText(getApplicationContext(), "Success!", Toast.LENGTH_LONG).show();
@@ -250,7 +271,9 @@ public class MainActivity extends Activity
                 @Override
                 /** Display a "Toast" message to announce the failure */
                 public void onFailure(int statusCode, Throwable throwable, JSONObject error) {
-                    Toast.makeText(getApplicationContext(), "Error: " + statusCode + " " + throwable.getMessage(), Toast.LENGTH_LONG).show();
+                    progressDialog.dismiss();
+                    Toast.makeText(getApplicationContext(), "Error: " + statusCode + " "
+                            + throwable.getMessage(), Toast.LENGTH_LONG).show();
 
                     // Log error message to help solve any problems
                     Log.e("omg android", statusCode + " " + throwable.getMessage());

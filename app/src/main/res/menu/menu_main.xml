@@ -3,12 +3,12 @@
     xmlns:omgandroid="http://schemas.android.com/apk/res-auto"
     xmlns:share="http://schemas.android.com/tools">
     <!-- Share item -->
-    <!--item
+    <item
         android:id="@+id/menu_item_share"
         android:title="Share"
         omgandroid:showAsAction="ifRoom"
-        omgandroid:actionProviderClass= "android.support.v7.widget.ShareActionProvider" /-->
+        omgandroid:actionProviderClass= "android.support.v7.widget.ShareActionProvider" />
 
-    <!-- share:showAsAction="ifRoom"
-        share:actionViewClass="android.support.v7.widget.SearchView" -->
+    <!--share:showAsAction="ifRoom"
+        share:actionViewClass="android.support.v7.widget.SearchView"-->
 </menu>

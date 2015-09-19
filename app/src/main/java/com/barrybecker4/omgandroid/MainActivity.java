@@ -34,14 +34,12 @@ import java.util.ArrayList;
 public class MainActivity extends Activity
         implements View.OnClickListener, AdapterView.OnItemClickListener  {
 
-    private TextView mainTextView;
+    //private TextView mainTextView;
     private Button mainButton;
-    private int numClicks = 0;
     private EditText mainEditText;
 
     ListView mainListView;
     JsonAdapter mJSONAdapter;
-    ArrayList<String> mNameList = new ArrayList<>();
     ShareActionProvider mShareActionProvider;
 
     // for persisting data
@@ -58,30 +56,26 @@ public class MainActivity extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // 1. Access the TextView defined in layout XML
-        // and then set its text
-        //mainTextView = (TextView) findViewById(R.id.main_textview);
-
-        // 2. Access the Button defined in layout XML and listen for it here
+        // Access the Button defined in layout XML and listen for it here
         mainButton = (Button) findViewById(R.id.main_button);
         mainButton.setOnClickListener(this);
 
-        // 3. Access the EditText defined in layout XML
+        // Access the EditText defined in layout XML
         mainEditText = (EditText) findViewById(R.id.main_edittext);
 
-        // 4. Access the ListView
+        // Access the ListView
         mainListView = (ListView) findViewById(R.id.main_listview);
 
-        // 5. Set this activity to react to list items being pressed
+        // Set this activity to react to list items being pressed
         mainListView.setOnItemClickListener(this);
 
-        // 6. The text you'd like to share has changed, and you need to update
+        // The text you'd like to share has changed, and you need to update
         setShareIntent();
 
-        // 7. Greet the user, or ask for their name if new
+        // Greet the user, or ask for their name if new
         displayWelcome();
 
-        // 10. Create a JSONAdapter for the ListView
+        // Create a JSONAdapter for the ListView
         mJSONAdapter = new JsonAdapter(this, getLayoutInflater());
 
         // Set the ListView to use the ArrayAdapter
@@ -97,17 +91,14 @@ public class MainActivity extends Activity
         // Access the device's key-value storage
         mSharedPreferences = getSharedPreferences(PREFS, MODE_PRIVATE);
 
-        // Read the user's name,
-        // or an empty string if nothing found
+        // Read the user's name, or an empty string if nothing found
         String name = mSharedPreferences.getString(PREF_NAME, "");
 
         if (name.length() > 0) {
-
             // If the name is valid, display a Toast welcoming them
             Toast.makeText(this, "Welcome back, " + name + "!", Toast.LENGTH_LONG).show();
         }
-         else {
-
+        else {
             // otherwise, show a dialog to ask for their name
             AlertDialog.Builder alert = new AlertDialog.Builder(this);
             alert.setTitle("Hello!");
@@ -150,16 +141,14 @@ public class MainActivity extends Activity
     /** Called when main_button clicked */
     @Override
     public void onClick(View v) {
-
-        numClicks++;
-
-        // 9. Take what was typed into the EditText and use in search
+        // Take what was typed into the EditText and use in search
         queryBooks(mainEditText.getText().toString());
 
-        /*
-        // change the text when the button is clicked.
-        mainTextView.setText("Button pressed " + numClicks + " times.");
 
+        int numClicks = 5;
+        // change the text when the button is clicked.
+        //mainTextView.setText("Button pressed " + numClicks + " times.");
+        /*
         // Take what was typed into the EditText and use in TextView
         mainTextView.setText(mainEditText.getText().toString()
                 + " is learning Android development! (" + numClicks + ")");
@@ -179,7 +168,7 @@ public class MainActivity extends Activity
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        // 12. Now that the user's chosen a book, grab the cover data
+        // Now that the user's chosen a book, grab the cover data
         JSONObject jsonObject = (JSONObject) mJSONAdapter.getItem(position);
         String coverID = jsonObject.optString("cover_i", "");
 
@@ -197,8 +186,7 @@ public class MainActivity extends Activity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
 
-        // Inflate the menu.
-        // Adds items to the action bar if it is present.
+        // Inflate the menu. Adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
 
         // Access the Share Item defined in menu XML
@@ -225,7 +213,7 @@ public class MainActivity extends Activity
             Intent shareIntent = new Intent(Intent.ACTION_SEND);
             shareIntent.setType("text/plain");
             shareIntent.putExtra(Intent.EXTRA_SUBJECT, "Android Development");
-            shareIntent.putExtra(Intent.EXTRA_TEXT, mainTextView.getText());
+            //shareIntent.putExtra(Intent.EXTRA_TEXT, mainTextView.getText());
 
             // Make sure the provider knows
             // it should work with that Intent
